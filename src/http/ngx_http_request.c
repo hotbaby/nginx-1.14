@@ -988,6 +988,7 @@ int ngx_http_ssl_servername(ngx_ssl_conn_t *ssl_conn, int *ad, void *arg)
 
 #endif
 
+// 处理请求行，例如：GET /uri HTTP/1.1
 static void
 ngx_http_process_request_line(ngx_event_t *rev)
 {
