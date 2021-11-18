@@ -828,6 +828,7 @@ void ngx_http_core_run_phases(ngx_http_request_t *r)
     }
 }
 
+//
 ngx_int_t
 ngx_http_core_generic_phase(ngx_http_request_t *r, ngx_http_phase_handler_t *ph)
 {
@@ -868,6 +869,7 @@ ngx_http_core_generic_phase(ngx_http_request_t *r, ngx_http_phase_handler_t *ph)
 }
 
 // NGX_HTTP_SERVER_REWRITE_PHASE
+// NGX_HTTP_REWRITE_PHASE，NGX_HTTP_FIND_CONFIG_PHASE阶段检索到location后有机会再次利用rewrite
 ngx_int_t
 ngx_http_core_rewrite_phase(ngx_http_request_t *r, ngx_http_phase_handler_t *ph)
 {
@@ -896,6 +898,9 @@ ngx_http_core_rewrite_phase(ngx_http_request_t *r, ngx_http_phase_handler_t *ph)
     return NGX_OK;
 }
 
+// NGX_HTTP_FIND_CONFIG_PHASE 是一个关键阶段，该阶段不可跳过
+// 该阶段根据NGX_HTTP_SERVER_REWRITE_PHASE阶段重写后的URI检索出匹配的Location
+// 原理是从Location静态数组二叉查找树快速检索
 ngx_int_t
 ngx_http_core_find_config_phase(ngx_http_request_t *r,
                                 ngx_http_phase_handler_t *ph)
@@ -993,6 +998,7 @@ ngx_http_core_find_config_phase(ngx_http_request_t *r,
     return NGX_AGAIN;
 }
 
+// NGX_HTTP_POST_REWRITE_PHASE，检查rewrite重构写URI的次数不超过10次，以防止rewrite死循环造成nginx服务不可用
 ngx_int_t
 ngx_http_core_post_rewrite_phase(ngx_http_request_t *r,
                                  ngx_http_phase_handler_t *ph)
@@ -1039,6 +1045,7 @@ ngx_http_core_post_rewrite_phase(ngx_http_request_t *r,
     return NGX_AGAIN;
 }
 
+// NGX_HTTP_ACCESS_PHASE 阶段
 ngx_int_t
 ngx_http_core_access_phase(ngx_http_request_t *r, ngx_http_phase_handler_t *ph)
 {
@@ -1111,6 +1118,7 @@ ngx_http_core_access_phase(ngx_http_request_t *r, ngx_http_phase_handler_t *ph)
     return NGX_OK;
 }
 
+// NGX_HTTP_POST_ACCESS_PHASE 阶段
 ngx_int_t
 ngx_http_core_post_access_phase(ngx_http_request_t *r,
                                 ngx_http_phase_handler_t *ph)
@@ -1139,6 +1147,7 @@ ngx_http_core_post_access_phase(ngx_http_request_t *r,
     return NGX_AGAIN;
 }
 
+// ngx_http_core_content_phase是NGX_HTTP_CONTENT_PHASE阶段的checker方法
 ngx_int_t
 ngx_http_core_content_phase(ngx_http_request_t *r,
                             ngx_http_phase_handler_t *ph)
@@ -1753,6 +1762,7 @@ ngx_http_send_response(ngx_http_request_t *r, ngx_uint_t status,
     return ngx_http_output_filter(r, &out);
 }
 
+// ngx_http_send_header方法负责构造HTTP响应行、头部，同时会把它们发送给客户端。
 ngx_int_t
 ngx_http_send_header(ngx_http_request_t *r)
 {
@@ -1777,6 +1787,8 @@ ngx_http_send_header(ngx_http_request_t *r)
     return ngx_http_top_header_filter(r);
 }
 
+// ngx_http_output_filter方法用于发送响应包体，
+// 它的第2个参数就是用于存放响应包体的缓冲区
 ngx_int_t
 ngx_http_output_filter(ngx_http_request_t *r, ngx_chain_t *in)
 {
