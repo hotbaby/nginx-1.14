@@ -117,11 +117,13 @@ typedef enum
 
     NGX_HTTP_TRY_FILES_PHASE,
 
+    NGX_HTTP_PRECONTENT_PHASE,
+
     // 处理HTTP请求内容阶段
     NGX_HTTP_CONTENT_PHASE,
 
     // 处理完请求记录日志阶段
-    NGX_HTTP_LOG_PHASEs
+    NGX_HTTP_LOG_PHASE
 } ngx_http_phases;
 
 typedef struct ngx_http_phase_handler_s ngx_http_phase_handler_t;
