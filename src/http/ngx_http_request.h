@@ -439,7 +439,7 @@ struct ngx_http_request_s
 
     ngx_http_cleanup_t *cleanup;
 
-    unsigned count : 16;
+    unsigned count : 16; // http request count, HTTP请求数量
     unsigned subrequests : 8;
     unsigned blocked : 8;
 

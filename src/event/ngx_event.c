@@ -619,6 +619,10 @@ ngx_event_process_init(ngx_cycle_t *cycle)
 
         module = cycle->modules[m]->ctx;
 
+        // 初始化event module，Linux一般为epoll module
+        // 设置ngx_event_actions接口
+        // epoll_create创建epoll对象
+        // 初始化 ngx_event_actions = ngx_epoll_module_ctx.actions;
         if (module->actions.init(cycle, ngx_timer_resolution) != NGX_OK)
         {
             /* fatal */

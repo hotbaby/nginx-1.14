@@ -1008,10 +1008,12 @@ ngx_http_process_request_line(ngx_event_t *rev)
     {
         ngx_log_error(NGX_LOG_INFO, c->log, NGX_ETIMEDOUT, "client timed out");
         c->timedout = 1;
+        // 超时关闭连接
         ngx_http_close_request(r, NGX_HTTP_REQUEST_TIME_OUT);
         return;
     }
 
+    // 重复多次调用
     rc = NGX_AGAIN;
 
     for (;;)
@@ -1036,11 +1038,13 @@ ngx_http_process_request_line(ngx_event_t *rev)
 
             r->request_line.len = r->request_end - r->request_start;
             r->request_line.data = r->request_start;
+
             r->request_length = r->header_in->pos - r->request_start;
 
             ngx_log_debug1(NGX_LOG_DEBUG_HTTP, c->log, 0,
                            "http request line: \"%V\"", &r->request_line);
 
+            // http method name
             r->method_name.len = r->method_end - r->request_start + 1;
             r->method_name.data = r->request_line.data;
 
@@ -1049,6 +1053,7 @@ ngx_http_process_request_line(ngx_event_t *rev)
                 r->http_protocol.len = r->request_end - r->http_protocol.data;
             }
 
+            // parse http uri
             if (ngx_http_process_request_uri(r) != NGX_OK)
             {
                 return;
@@ -1076,6 +1081,7 @@ ngx_http_process_request_line(ngx_event_t *rev)
                     return;
                 }
 
+                // 根据请求Host配置virtual server
                 if (ngx_http_set_virtual_server(r, &host) == NGX_ERROR)
                 {
                     return;
@@ -1500,7 +1506,7 @@ static ssize_t
 ngx_http_read_request_header(ngx_http_request_t *r)
 {
     ssize_t n;
-    ngx_event_t *rev;
+    ngx_event_t *rev; // rev是read event简写
     ngx_connection_t *c;
     ngx_http_core_srv_conf_t *cscf;
 
@@ -2706,7 +2712,7 @@ void ngx_http_finalize_request(ngx_http_request_t *r, ngx_int_t rc)
     ngx_http_finalize_connection(r);
 }
 
-// ngx_http_terminate_request方法是提供给HTTP模块使用的结束请求方法，但它属于非正 常结束的场景，可以理解为强制关闭请求
+// ngx_http_terminate_request方法是提供给HTTP模块使用的结束请求方法，但它属于非正常结束的场景，可以理解为强制关闭请求
 static void
 ngx_http_terminate_request(ngx_http_request_t *r, ngx_int_t rc)
 {
@@ -2772,7 +2778,7 @@ ngx_http_terminate_handler(ngx_http_request_t *r)
     ngx_http_close_request(r, 0);
 }
 
-// ngx_http_terminate_request方法是提供给HTTP模块使用的结束请求方法，但它属于非正 常结束的场景，可以理解为强制关闭请求
+// ngx_http_terminate_request方法是提供给HTTP模块使用的结束请求方法，但它属于非正常结束的场景，可以理解为强制关闭请求
 static void
 ngx_http_finalize_connection(ngx_http_request_t *r)
 {
@@ -3685,7 +3691,7 @@ ngx_http_post_action(ngx_http_request_t *r)
     return NGX_OK;
 }
 
-// ngx_http_close_request方法是更高层的用于关闭请求的方法，当然，HTTP模块一般也不 会直接调用它的。s
+// ngx_http_close_request方法是更高层的用于关闭请求的方法，当然，HTTP模块一般也不会直接调用它的。
 static void
 ngx_http_close_request(ngx_http_request_t *r, ngx_int_t rc)
 {
